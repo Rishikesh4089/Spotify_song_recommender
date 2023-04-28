@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Top Tracks on Spotify</title>
+  </head>
+  <body>
+    <h1>My Top Tracks on Spotify</h1>
+    <h2>Last 30 Days</h2>
+    <ol>
+      {% for track in top_tracks %}
+        <li>{{ track }}</li>
+      {% endfor %}
+    </ol>
+
+    <h2>Recommended Tracks</h2>
+    <ol>
+      {% for track in recommended_tracks %}
+        <li>{{ track }}</li>
+      {% endfor %}
+    </ol>
+  </body>
+</html>

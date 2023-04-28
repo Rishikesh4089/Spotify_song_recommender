@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>My Spotify App</title>
+</head>
+<body>
+	<h1>My Top Tracks1</h1>
+	<ul>
+	{% for track in top_tracks %}
+		<li>{{ track }}</li>
+	{% endfor %}
+	</ul>
+
+	<h1>Recommended Tracks</h1>
+	<ul>
+	{% for track in recommended_tracks %}
+		<li>{{ track }}</li>
+	{% endfor %}
+	</ul>
+</body>
+</html>
