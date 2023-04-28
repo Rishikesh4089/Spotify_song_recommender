@@ -1,0 +1,61 @@
+import os
+from flask import Flask, render_template, request, redirect
+from spotipy import Spotify
+from spotipy.oauth2 import SpotifyOAuth
+
+app = Flask(__name__)
+
+# Spotify API credentials
+CLIENT_ID = 'd1bd013764f64a8bbb6e2371fb3872e8'
+CLIENT_SECRET = 'e8ea2048d9854d5aa37eaa98aa4d9588'
+REDIRECT_URI = 'http://localhost:5000/callback'
+
+# Create a Spotify OAuth object
+sp_oauth = SpotifyOAuth(
+    client_id=CLIENT_ID,
+    client_secret=CLIENT_SECRET,
+    redirect_uri=REDIRECT_URI,
+    scope='user-library-read'
+)
+
+# Function to get the user's top tracks and recommended tracks
+def get_top_tracks_and_recommendations():
+    # Get the access token using the Spotify OAuth object
+    access_token = sp_oauth.get_access_token()['access_token']
+    # Create a Spotify object using the access token
+    sp = Spotify(auth=access_token)
+    # Get the user's top tracks over the last 30 days
+    top_tracks = sp.current_user_top_tracks(time_range='short_term', limit=5)
+    # Get the IDs of the top tracks
+    top_track_ids = [track['id'] for track in top_tracks['items']]
+    # Get recommended tracks based on the top tracks
+    recommended_tracks = sp.recommendations(seed_tracks=top_track_ids, limit=5)
+    # Get the names of the recommended tracks
+    recommended_track_names = [track['name'] for track in recommended_tracks['tracks']]
+    # Return the top tracks and recommended tracks
+    return [track['name'] for track in top_tracks['items']], recommended_track_names
+
+# Home page route
+@app.route('/')
+def home():
+    # Check if the user is authorized with Spotify
+    if not sp_oauth.get_cached_token():
+        # Redirect to the Spotify authorization page
+        auth_url = sp_oauth.get_authorize_url()
+        return f'<html><body><a href="{auth_url}">Authorize with Spotify</a></body></html>'
+    else:
+        # Get the user's top tracks and recommended tracks
+        top_tracks, recommended_tracks = get_top_tracks_and_recommendations()
+        # Render the template with the top tracks and recommended tracks
+        return render_template('top_tracks.html', top_tracks=top_tracks, recommended_tracks=recommended_tracks)
+
+# Callback route
+@app.route('/callback')
+def callback():
+    # Get the access token using the authorization code
+    sp_oauth.get_access_token(request.args['code'])
+    # Redirect to the home page
+    return redirect('/')
+
+if __name__ == '__main__':
+    app.run(debug=True)
